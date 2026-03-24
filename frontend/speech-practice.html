@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Practice - Speech Therapy</title>
+    <link rel="stylesheet" href="styles.css?v=3">
+    <style>
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            position: relative;
+        }
+        .icon-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.1);
+        }
+        .icon-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #667eea;
+        }
+        .icon-btn.logout-btn svg {
+            fill: #f44336;
+        }
+        .icon-btn:hover svg {
+            fill: #764ba2;
+        }
+        .icon-btn.logout-btn:hover {
+            background: rgba(244, 67, 54, 0.1);
+        }
+        .icon-btn.logout-btn:hover svg {
+            fill: #d32f2f;
+        }
+        .tooltip {
+            position: absolute;
+            bottom: -35px;
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .icon-btn:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-container">
+            <div class="header">
+                <h1>🎤 Speech Practice</h1>
+                <div class="header-icons">
+                    <button onclick="window.location.href='dashboard.html'" class="icon-btn" title="Dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                        <span class="tooltip">Dashboard</span>
+                    </button>
+                    <button onclick="window.location.href='my-progress.html'" class="icon-btn" title="My Progress">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                        </svg>
+                        <span class="tooltip">My Progress</span>
+                    </button>
+                    <button onclick="window.location.href='profile.html'" class="icon-btn" title="Profile">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="tooltip">Profile</span>
+                    </button>
+                    <button id="logoutBtn" class="icon-btn logout-btn" title="Logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                        </svg>
+                        <span class="tooltip">Logout</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="practice-section">
+                <h3>Practice Your Speech</h3>
+                <p>Record your voice and get real-time pronunciation feedback.</p>
+                
+                <div class="info-card" style="background: #e3f2fd; border-left: 4px solid #2196f3; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #1565c0;">
+                        <strong>🎤 How it works:</strong> Click "Start Recording", read the sentence aloud clearly, then click "Stop Recording" to get real pronunciation analysis!
+                    </p>
+                </div>
+                
+                <div class="info-card" style="background: #e8f5e9; border-left: 4px solid #4caf50; margin-bottom: 20px;">
+                    <p style="margin: 0; color: #2e7d32;">
+                        <strong>✅ Real Speech Recognition:</strong> This app uses your browser's built-in speech recognition to analyze your actual pronunciation. Works best in Chrome or Edge browsers.
+                    </p>
+                </div>
+                
+                <div class="info-card">
+                    <h4>How to Practice:</h4>
+                    <ol style="margin-left: 20px; line-height: 1.8;">
+                        <li>Click the "Start Recording" button below</li>
+                        <li>Read the sentence displayed on screen</li>
+                        <li>Click "Stop Recording" when finished</li>
+                        <li>Get instant feedback on your speech</li>
+                    </ol>
+                </div>
+                
+                <div class="practice-card">
+                    <!-- Practice Sentences: random on load/refresh -->
+                    <h3 style="margin-bottom:6px;">Practice Sentence:</h3>
+                    <p id="practiceSentence" style="font-size: 24px; color: #667eea; margin: 20px 0; font-weight: 600;">
+                        "Loading..."
+                    </p>
+                    <button onclick="loadNewSentence()" style="background:none;border:2px solid #667eea;color:#667eea;padding:7px 18px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:10px;">
+                        🔀 Change Sentence
+                    </button>
+                    
+                    <div style="margin: 30px 0;">
+                        <button id="recordBtn" class="btn btn-primary" style="width: auto; padding: 15px 40px; margin: 10px;">
+                            🎤 Start Recording
+                        </button>
+                        <button id="stopBtn" class="btn btn-secondary" style="width: auto; padding: 15px 40px; margin: 10px;" disabled>
+                            ⏹️ Stop Recording
+                        </button>
+                    </div>
+                    
+                    <div id="recordingStatus" style="margin: 20px 0; font-size: 18px; color: #666;"></div>
+                    
+                    <audio id="audioPlayback" controls style="width: 100%; margin-top: 20px; display: none;"></audio>
+                </div>
+                
+                <div id="feedbackCard" class="info-card" style="display: none; margin-top: 30px; background: #f8f9fa; border: 2px solid #e0e0e0;">
+                    <h3 style="color: #333;">📋 Recording Status</h3>
+                    <div id="feedbackContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="speech-practice.js?v=6"></script>
+</body>
+</html>

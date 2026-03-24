@@ -1,0 +1,16 @@
+fastapi==0.68.2
+uvicorn==0.15.0
+sqlalchemy==1.4.41
+pydantic==1.10.2
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.5
+python-dotenv==0.19.2
+numpy==1.21.6
+python-multipart==0.0.5
+email-validator==2.0.0.post2
+requests==2.31.0
+urllib3<2
+SpeechRecognition==3.10.0
+pydub==0.25.1
+APScheduler==3.10.4

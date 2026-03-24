@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Speech Therapy</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-container">
+            <div class="header">
+                <h1>📈 Analytics Dashboard</h1>
+                <div>
+                    <button onclick="window.location.href='dashboard.html'" class="btn btn-secondary">Back to Dashboard</button>
+                    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+            
+            <div class="analytics-section">
+                <h3>Detailed Session Analytics</h3>
+                <p>View comprehensive analytics of your speech therapy sessions.</p>
+                
+                <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+                    <div class="metric-card">
+                        <h4>📊 Overall Performance</h4>
+                        <div class="metric-value">-</div>
+                        <div class="metric-trend">Start practicing to see your performance</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>🎯 Accuracy Rate</h4>
+                        <div class="metric-value">-</div>
+                        <div class="metric-trend">Complete sessions to track accuracy</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>⏱️ Average Session Time</h4>
+                        <div class="metric-value">-</div>
+                        <div class="metric-trend">No sessions recorded yet</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>🔥 Consistency Score</h4>
+                        <div class="metric-value">-</div>
+                        <div class="metric-trend">Practice regularly to build consistency</div>
+                    </div>
+                </div>
+                
+                <div class="info-card" style="margin: 30px 0;">
+                    <h3>Weekly Progress Chart</h3>
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                        <div style="text-align: center; padding: 60px 20px; color: #999;">
+                            <p style="font-size: 48px;">📊</p>
+                            <p>Your progress chart will appear here once you start practicing</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Strengths & Areas for Improvement</h3>
+                    <div style="text-align: center; padding: 40px 20px; color: #999;">
+                        <p style="font-size: 48px;">🎯</p>
+                        <p>Complete practice sessions to get personalized insights about your strengths and areas for improvement</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="analytics.js"></script>
+</body>
+</html>

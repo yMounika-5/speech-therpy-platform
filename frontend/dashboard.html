@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Therapy - Dashboard</title>
+    <link rel="stylesheet" href="styles.css?v=3">
+    <style>
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            position: relative;
+        }
+        .icon-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.1);
+        }
+        .icon-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #667eea;
+        }
+        .icon-btn.logout-btn svg {
+            fill: #f44336;
+        }
+        .icon-btn:hover svg {
+            fill: #764ba2;
+        }
+        .icon-btn.logout-btn:hover {
+            background: rgba(244, 67, 54, 0.1);
+        }
+        .icon-btn.logout-btn:hover svg {
+            fill: #d32f2f;
+        }
+        .tooltip {
+            position: absolute;
+            bottom: -35px;
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .icon-btn:hover .tooltip {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-container">
+            <div class="header">
+                <h1>Speech Therapy Dashboard</h1>
+                <div class="header-icons">
+                    <button onclick="window.location.href='speech-practice.html'" class="icon-btn" title="Speech Practice">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                        </svg>
+                        <span class="tooltip">Speech Practice</span>
+                    </button>
+                    <button onclick="window.location.href='profile.html'" class="icon-btn" title="Profile">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span class="tooltip">Profile</span>
+                    </button>
+                    <button id="logoutBtn" class="icon-btn logout-btn" title="Logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                        </svg>
+                        <span class="tooltip">Logout</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="user-info">
+                <h2>Welcome, <span id="userName">User</span>!</h2>
+            </div>
+            
+            <div class="features-section">
+                <div class="features-grid">
+                    <div class="feature-card" onclick="window.location.href='speech-practice.html'" style="cursor: pointer;">
+                        <h4>🎤 Speech Practice</h4>
+                        <p>Practice your speech with AI-powered feedback</p>
+                    </div>
+                    <div class="feature-card" onclick="window.location.href='my-progress.html'" style="cursor: pointer;">
+                        <h4>📊 My Progress</h4>
+                        <p>Track your improvement and view detailed statistics</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="dashboardMessage" class="message"></div>
+        </div>
+    </div>
+    
+    <script src="dashboard.js"></script>
+</body>
+</html>

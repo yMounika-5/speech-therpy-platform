@@ -1,0 +1,405 @@
+const API_BASE_URL = 'http://127.0.0.1:8000';
+
+// Check if user is logged in
+const token = localStorage.getItem('access_token');
+if (!token) {
+    window.location.href = 'index.html';
+}
+
+// Logout functionality
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    try {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+    localStorage.removeItem('access_token');
+    window.location.href = 'index.html';
+});
+
+// Speech recording functionality
+let mediaRecorder;
+let audioChunks = [];
+let recognition;
+let recognizedText = '';
+
+const recordBtn = document.getElementById('recordBtn');
+const stopBtn = document.getElementById('stopBtn');
+const recordingStatus = document.getElementById('recordingStatus');
+const audioPlayback = document.getElementById('audioPlayback');
+const feedbackCard = document.getElementById('feedbackCard');
+const feedbackContent = document.getElementById('feedbackContent');
+
+// Initialize Web Speech API
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    recognition.onresult = (event) => {
+        recognizedText = '';
+        for (let i = 0; i < event.results.length; i++) {
+            recognizedText += event.results[i][0].transcript + ' ';
+        }
+        recognizedText = recognizedText.trim().toLowerCase();
+        console.log('Recognized:', recognizedText);
+    };
+    
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+    };
+}
+
+recordBtn.addEventListener('click', async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        recognizedText = '';
+        
+        // Start speech recognition
+        if (recognition) {
+            recognition.start();
+        }
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            // Stop speech recognition
+            if (recognition) {
+                recognition.stop();
+            }
+            
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioPlayback.src = audioUrl;
+            audioPlayback.style.display = 'block';
+            
+            // Analyze speech with recognized text
+            await analyzeAudio(audioBlob, recognizedText);
+        };
+        
+        mediaRecorder.start();
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
+        recordingStatus.textContent = '🔴 Recording in progress... Speak clearly!';
+        recordingStatus.style.color = '#f44336';
+        
+    } catch (error) {
+        console.error('Error accessing microphone:', error);
+        recordingStatus.textContent = '❌ Error: Could not access microphone. Please allow microphone access.';
+        recordingStatus.style.color = '#f44336';
+    }
+});
+
+stopBtn.addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+        recordingStatus.textContent = '✅ Recording completed! Listen to your recording below.';
+        recordingStatus.style.color = '#4caf50';
+    }
+});
+
+async function analyzeAudio(audioBlob, recognizedText) {
+    feedbackCard.style.display = 'block';
+    feedbackContent.innerHTML = `
+        <div style="text-align: center; padding: 30px;">
+            <p style="font-size: 48px;">⏳</p>
+            <p>Analyzing your speech...</p>
+        </div>
+    `;
+    
+    // Get the current practice sentence
+    const sentence = document.getElementById('practiceSentence').textContent.replace(/"/g, '').trim();
+    
+    // Check if speech was recognized
+    if (!recognizedText || recognizedText.length < 3) {
+        feedbackContent.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: #f44336;">
+                <p style="font-size: 48px;">⚠️</p>
+                <p><strong>No Speech Detected</strong></p>
+                <p style="margin-top: 15px;">We couldn't hear you clearly. Please:</p>
+                <ul style="text-align: left; margin: 20px auto; max-width: 400px; line-height: 1.8;">
+                    <li>Speak louder and more clearly</li>
+                    <li>Make sure your microphone is working</li>
+                    <li>Allow microphone permissions in your browser</li>
+                    <li>Reduce background noise</li>
+                </ul>
+            </div>
+        `;
+        return;
+    }
+    
+    // Analyze pronunciation locally
+    const analysis = analyzePronunciation(sentence, recognizedText);
+    
+    // Save to backend
+    try {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+        formData.append('sentence', sentence);
+        formData.append('recognized_text', recognizedText);
+        formData.append('accuracy_score', analysis.accuracy_score);
+        formData.append('clarity_score', analysis.clarity_score);
+        
+        const response = await fetch(`${API_BASE_URL}/api/speech/analyze-real`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            analysis.session_id = result.session_id;
+        }
+    } catch (error) {
+        console.error('Error saving to backend:', error);
+    }
+    
+    // Show feedback
+    showFeedback(analysis);
+}
+
+function analyzePronunciation(expectedSentence, recognizedText) {
+    const expected = expectedSentence.toLowerCase().trim();
+    const recognized = recognizedText.toLowerCase().trim();
+    
+    const expectedWords = expected.split(/\s+/);
+    const recognizedWords = recognized.split(/\s+/);
+    
+    // Calculate word-level accuracy
+    let correctWords = 0;
+    let wordFeedback = [];
+    let difficultWords = [];
+    
+    expectedWords.forEach((expectedWord, index) => {
+        const found = recognizedWords.includes(expectedWord);
+        const inCorrectPosition = recognizedWords[index] === expectedWord;
+        
+        if (inCorrectPosition) {
+            correctWords += 1;
+        } else if (found) {
+            correctWords += 0.7;
+            wordFeedback.push({
+                word: expectedWord,
+                status: 'misplaced',
+                tip: `You said "${expectedWord}" but in the wrong position`
+            });
+        } else {
+            // Check for similar words (partial match)
+            const similar = recognizedWords.find(w => 
+                w.includes(expectedWord.substring(0, 3)) || 
+                expectedWord.includes(w.substring(0, 3))
+            );
+            
+            if (similar) {
+                correctWords += 0.3;
+                difficultWords.push({
+                    word: expectedWord,
+                    recognized: similar,
+                    tip: `You said "${similar}" instead of "${expectedWord}"`
+                });
+            } else {
+                difficultWords.push({
+                    word: expectedWord,
+                    recognized: 'not detected',
+                    tip: `The word "${expectedWord}" was not clearly heard`
+                });
+            }
+        }
+    });
+    
+    // Calculate scores
+    const accuracy_score = Math.round((correctWords / expectedWords.length) * 100);
+    const clarity_score = Math.min(95, accuracy_score + 5);
+    
+    // Determine pronunciation rating
+    let pronunciation, pronunciation_color;
+    if (accuracy_score >= 85) {
+        pronunciation = "Excellent";
+        pronunciation_color = "#2e7d32";
+    } else if (accuracy_score >= 70) {
+        pronunciation = "Good";
+        pronunciation_color = "#558b2f";
+    } else if (accuracy_score >= 50) {
+        pronunciation = "Fair";
+        pronunciation_color = "#f57c00";
+    } else {
+        pronunciation = "Needs Improvement";
+        pronunciation_color = "#d32f2f";
+    }
+    
+    // Generate feedback
+    const detailed_feedback = [];
+    if (accuracy_score >= 85) {
+        detailed_feedback.push("🌟 Excellent pronunciation!");
+        detailed_feedback.push("🎯 Your clarity is outstanding");
+    } else if (accuracy_score >= 70) {
+        detailed_feedback.push("✨ Good job! Most words were clear");
+        detailed_feedback.push("🎵 Work on the words you missed");
+    } else {
+        detailed_feedback.push("💪 Keep practicing!");
+        detailed_feedback.push("📢 Speak more slowly and clearly");
+        detailed_feedback.push("👄 Focus on enunciating each word");
+    }
+    
+    // Generate suggestions
+    const suggestions = [];
+    if (difficultWords.length > 0) {
+        suggestions.push(`Focus on these words: ${difficultWords.slice(0, 3).map(w => w.word).join(', ')}`);
+    }
+    if (accuracy_score < 70) {
+        suggestions.push("Practice each word separately before combining them");
+        suggestions.push("Record yourself and listen back");
+    }
+    suggestions.push("Try speaking the sentence multiple times");
+    
+    return {
+        accuracy_score,
+        clarity_score,
+        pronunciation,
+        pronunciation_color,
+        pace: "Good pace",
+        detailed_feedback,
+        suggestions,
+        difficult_words: difficultWords,
+        word_feedback: wordFeedback,
+        recognized_text: recognizedText,
+        expected_text: expectedSentence
+    };
+}
+
+function showFeedback(analysis) {
+    if (!analysis) {
+        feedbackContent.innerHTML = `
+            <div style="text-align: center; padding: 30px 20px;">
+                <p style="font-size: 48px; margin-bottom: 15px;">🎤</p>
+                <h3 style="color: #2e7d32; margin-bottom: 15px;">Recording Saved!</h3>
+                <p style="color: #666;">Listen to your recording above for self-assessment.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    feedbackCard.style.display = 'block';
+    
+    // Build difficult words section
+    let difficultWordsHTML = '';
+    if (analysis.difficult_words && analysis.difficult_words.length > 0) {
+        difficultWordsHTML = `
+            <div style="margin: 20px 0; padding: 15px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+                <strong>🎯 Words to Focus On:</strong>
+                <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+                    ${analysis.difficult_words.map(w => `
+                        <li><strong>${w.word}</strong> - ${w.tip}</li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    // Display comprehensive analysis results
+    feedbackContent.innerHTML = `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #333; margin-bottom: 15px;">📊 Your Performance</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                    <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Clarity Score</p>
+                    <p style="color: ${analysis.pronunciation_color}; font-size: 32px; font-weight: bold; margin: 0;">
+                        ${analysis.clarity_score}%
+                    </p>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                    <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Accuracy Score</p>
+                    <p style="color: ${analysis.pronunciation_color}; font-size: 32px; font-weight: bold; margin: 0;">
+                        ${analysis.accuracy_score}%
+                    </p>
+                </div>
+            </div>
+            
+            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span><strong>Pronunciation:</strong></span>
+                    <span style="color: ${analysis.pronunciation_color}; font-weight: 600;">
+                        ${analysis.pronunciation}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span><strong>Pace:</strong></span>
+                    <span style="color: #2e7d32;">${analysis.pace}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>Duration:</strong></span>
+                    <span style="color: #666;">${analysis.audio_duration}</span>
+                </div>
+            </div>
+        </div>
+        
+        ${difficultWordsHTML}
+        
+        <div style="margin: 20px 0; padding: 15px; background: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+            <strong>💬 Detailed Feedback:</strong>
+            <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+                ${analysis.detailed_feedback.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 15px; background: #f3e5f5; border-radius: 8px; border-left: 4px solid #9c27b0;">
+            <strong>💡 How to Improve:</strong>
+            <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+                ${analysis.suggestions.map(s => `<li>${s}</li>`).join('')}
+            </ul>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px; text-align: center;">
+            <strong>🎯 Practice Tip:</strong>
+            <p style="margin: 10px 0 0 0; color: #2e7d32;">
+                Record this sentence multiple times and compare your scores to track improvement!
+            </p>
+        </div>
+    `;
+}
+
+// Practice sentences library
+const practiceSentences = [
+    "The quick brown fox jumps over the lazy dog",
+    "She sells seashells by the seashore",
+    "Peter Piper picked a peck of pickled peppers",
+    "How much wood would a woodchuck chuck",
+    "I scream, you scream, we all scream for ice cream",
+    "Unique New York, you need New York, you know you need unique New York",
+    "Red lorry, yellow lorry, red lorry, yellow lorry",
+    "Toy boat, toy boat, toy boat",
+    "Six thick thistle sticks",
+    "The lips, the teeth, the tip of the tongue"
+];
+
+// Set random sentence on page load
+function setRandomSentence() {
+    const randomSentence = practiceSentences[Math.floor(Math.random() * practiceSentences.length)];
+    document.getElementById('practiceSentence').textContent = `"${randomSentence}"`;
+}
+
+// Change sentence on page load/refresh
+setRandomSentence();
+
+// Also change sentence every 30 seconds
+setInterval(() => {
+    setRandomSentence();
+}, 30000);

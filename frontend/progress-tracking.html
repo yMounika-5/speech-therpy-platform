@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Tracking - Speech Therapy</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-container">
+            <div class="header">
+                <h1>📊 Progress Tracking</h1>
+                <div>
+                    <button onclick="window.location.href='dashboard.html'" class="btn btn-secondary">Back to Dashboard</button>
+                    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+            
+            <div class="progress-section">
+                <h3>Your Progress Overview</h3>
+                <p>Track your improvement and see how far you've come!</p>
+                
+                <div class="info-card" style="background: #e3f2fd; margin: 20px 0;">
+                    <p style="color: #1976d2; margin: 0;">
+                        💡 <strong>Getting Started:</strong> Your progress data will appear here once you complete speech practice sessions. Click on "Speech Practice" from the dashboard to begin!
+                    </p>
+                </div>
+                
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
+                    <div class="stat-card">
+                        <h4>Total Sessions</h4>
+                        <p id="totalSessions" style="font-size: 36px; color: #667eea; font-weight: bold;">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Practice Hours</h4>
+                        <p id="practiceHours" style="font-size: 36px; color: #667eea; font-weight: bold;">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Average Score</h4>
+                        <p id="averageScore" style="font-size: 36px; color: #667eea; font-weight: bold;">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Streak Days</h4>
+                        <p id="streakDays" style="font-size: 36px; color: #667eea; font-weight: bold;">0</p>
+                    </div>
+                </div>
+                
+                <div class="info-card" style="margin: 30px 0;">
+                    <h3>Recent Activity</h3>
+                    <div id="activityList" class="activity-list">
+                        <div style="text-align: center; padding: 30px; color: #999;">
+                            <p style="font-size: 48px;">📝</p>
+                            <p>No activity yet. Start practicing to see your progress!</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h3>🎉 Achievements</h3>
+                    <div id="achievementsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;">
+                        <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.7);">
+                            <p style="font-size: 48px;">🏆</p>
+                            <p>Complete your first session to unlock achievements!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="progress-tracking.js"></script>
+</body>
+</html>

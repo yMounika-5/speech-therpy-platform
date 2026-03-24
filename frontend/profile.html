@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Speech Therapy</title>
+    <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-container">
+            <div class="header">
+                <h1>👤 My Profile</h1>
+                <div>
+                    <button onclick="window.location.href='dashboard.html'" class="btn btn-secondary">Back to Dashboard</button>
+                    <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+            
+            <div class="user-info">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 60px; color: white;">
+                        👤
+                    </div>
+                    <h2 style="margin: 0;">Welcome, <span id="userName">User</span>!</h2>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Profile Information</h3>
+                    <div class="info-row">
+                        <span class="label">Full Name:</span>
+                        <span id="userFullName" class="value">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Username:</span>
+                        <span id="userUsername" class="value">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Email:</span>
+                        <span id="userEmail" class="value">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Account Status:</span>
+                        <span id="userStatus" class="value status-active">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Member Since:</span>
+                        <span id="userCreated" class="value">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="dashboardMessage" class="message"></div>
+        </div>
+    </div>
+    
+    <script src="profile.js"></script>
+</body>
+</html>
